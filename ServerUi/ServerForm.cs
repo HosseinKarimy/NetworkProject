@@ -51,7 +51,7 @@ namespace ServerUi
                 {
                     ClientSocket = ServerListener.Accept();
 
-                    Invoke(new Action(() => { RichTextBox_Logs.Text += $"\nClient with EndPoint: {ClientSocket.RemoteEndPoint} connected! ({DateTime.Now.TimeOfDay})"; }));
+                    Invoke(new Action(() => { RichTextBox_Logs.Text += $"Client with EndPoint: {ClientSocket.RemoteEndPoint} connected! ({DateTime.Now})\n"; }));
 
 
                     byte[] bytes = new Byte[1024];
@@ -67,16 +67,13 @@ namespace ServerUi
                     byte[] data = Encoding.ASCII.GetBytes(context);
                     ClientSocket.Send(data);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    MessageBox.Show(ex.Message);
+                    
                 }
                 finally
                 {
-                    if (ClientSocket != null)
-                    {
-                        ClientSocket.Close();
-                    }
+                    ClientSocket?.Close();
                 }
             }
 
@@ -93,12 +90,12 @@ namespace ServerUi
             try
             {
                 ServerListener.Close();
+                ClientSocket.Close();
                 ListenerThread.Abort();
-                RichTextBox_Logs.Text += $"\nServer Shutdown...";
+                RichTextBox_Logs.Text += $"Server Shutdown...\n";
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
+            catch (Exception )
+            {                
             }        
         }
     }
