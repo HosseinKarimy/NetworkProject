@@ -1,17 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Net.Sockets;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.IO;
-using System.Net.Http;
-using System.Threading;
 
 namespace ClientUi
 {
@@ -22,36 +13,41 @@ namespace ClientUi
             InitializeComponent();
         }
 
+        public Socket Client { get; set; }
+
         private void Button_Process_Click(object sender, EventArgs e)
         {
             try
             {
-                IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName());
-                IPAddress ipAddr = ipHost.AddressList[0];
-                IPEndPoint localEndPoint = new IPEndPoint(ipAddr, 11111);
+                IPAddress ipAdders = IPAddress.Parse("192.168.1.100");
+                IPEndPoint localEndPoint = new IPEndPoint(ipAdders, 11111);
 
-                Socket client = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                client.Connect(localEndPoint);
+                Client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                Client.Connect(localEndPoint);
 
-                //send message to server
-                var message = $"{TextBox_UserName.Text}\n";
-                message += TextBox_NewText.Text;
-                byte[] messageSent = Encoding.ASCII.GetBytes(message);
-                int byteSent = client.Send(messageSent);
-
-                byte[] messageReceived = new byte[1024];
-                int byteRecv = client.Receive(messageReceived);
-
-                RichTextBox_AllContext.Text = Encoding.ASCII.GetString(messageReceived,0, byteRecv);
-
-                client.Shutdown(SocketShutdown.Both);
-                client.Close();
+                var message = MergeMessage();
                 
+                byte[] data = Encoding.ASCII.GetBytes(message);
+                Client.Send(data);
+
+                byte[] context = new byte[1024];
+                int numByte = Client.Receive(context);
+
+                RichTextBox_AllContext.Text = Encoding.ASCII.GetString(context, 0, numByte);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
+            finally
+            {
+                Client.Close();
+            }
+        }
+
+        private string MergeMessage()
+        {
+            return TextBox_UserName.Text + '\n' + TextBox_NewText.Text;
         }
     }
 }

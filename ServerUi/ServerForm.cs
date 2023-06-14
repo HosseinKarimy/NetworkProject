@@ -1,17 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ServerUi
@@ -23,24 +15,25 @@ namespace ServerUi
             InitializeComponent();
         }
 
+
+        public Socket ServerListener { get; set; }
+        public Socket ClientSocket { get; set; }
+        public Thread ListenerThread { get; set; }
+
         private void Button_Start_Click(object sender, EventArgs e)
         {
             try
             {
+                IPAddress ipAdders = IPAddress.Parse("192.168.1.100");
+                IPEndPoint localEndPoint = new IPEndPoint(ipAdders, 11111);
+                ServerListener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                ServerListener.Bind(localEndPoint);
+                ServerListener.Listen(2);
 
-                IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName());
-                IPAddress ipAddr = ipHost.AddressList[0];
-                IPEndPoint localEndPoint = new IPEndPoint(ipAddr, 11111);
+                RichTextBox_Logs.Text += $"Server Started...{localEndPoint}\n";
 
-                Socket listener = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-
-                listener.Bind(localEndPoint);
-                listener.Listen(10);
-
-                RichTextBox_Logs.Text += $"Server Started...";
-
-                Thread thread = new Thread(() => Listener(listener));
-                thread.Start();
+                ListenerThread = new Thread(() => Listener());
+                ListenerThread.Start();
             }
             catch (Exception ex)
             {
@@ -50,53 +43,63 @@ namespace ServerUi
 
         }
 
-        private void Listener(Socket listener)
+        private void Listener()
         {
             while (true)
             {
-                Socket Socket = listener.Accept();
-
-                Invoke(Action () => { RichTextBox_Logs.Text += $"Server Started..."}) ;
-
-
-                byte[] bytes = new Byte[1024];
-                int numByte = Socket.Receive(bytes);
-
-                string message = Encoding.ASCII.GetString(bytes, 0, numByte);
-
-
-
-                string[] lines = message.Split('\n');
-                string UserName = lines[0];
-                message = message.Substring(UserName.Length + 1);
-
-                string context = " ";
-                if (File.Exists($"{UserName}.txt"))
+                try
                 {
-                    context = File.ReadAllText($"{UserName}.txt");
-                }
-                else
-                {
-                    File.Create($"{UserName}.txt").Close();
-                }
-                context += message;
-                using (var streamWriter = new StreamWriter($"{UserName}.txt", false))
-                {
-                    streamWriter.WriteLine(context);
-                }
+                    ClientSocket = ServerListener.Accept();
 
-                byte[] data = Encoding.ASCII.GetBytes(context);
-                Socket.Send(data);
+                    Invoke(new Action(() => { RichTextBox_Logs.Text += $"\nClient with EndPoint: {ClientSocket.RemoteEndPoint} connected! ({DateTime.Now.TimeOfDay})"; }));
 
-                Socket.Shutdown(SocketShutdown.Both);
-                Socket.Close();
+
+                    byte[] bytes = new Byte[1024];
+                    int numByte = ClientSocket.Receive(bytes);
+
+                    string ReceivedMessage = Encoding.ASCII.GetString(bytes, 0, numByte);
+
+                    (string UserName, string NewText) = SplitMessage(ReceivedMessage);
+
+                    File.AppendAllText($"{UserName}.txt", NewText);
+                    var context = File.ReadAllText($"{UserName}.txt");
+
+                    byte[] data = Encoding.ASCII.GetBytes(context);
+                    ClientSocket.Send(data);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+                finally
+                {
+                    if (ClientSocket != null)
+                    {
+                        ClientSocket.Close();
+                    }
+                }
             }
 
         }
 
+        private (string UserName, string NewText) SplitMessage(string received)
+        {
+            string[] lines = received.Split('\n');
+            return (lines[0], received.Substring(lines[0].Length + 1));
+        }
+
         private void button2_Click(object sender, EventArgs e)
         {
-
+            try
+            {
+                ServerListener.Close();
+                ListenerThread.Abort();
+                RichTextBox_Logs.Text += $"\nServer Shutdown...";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }        
         }
     }
 }
