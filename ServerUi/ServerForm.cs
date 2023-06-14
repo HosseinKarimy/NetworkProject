@@ -27,14 +27,19 @@ namespace ServerUi
         {
             try
             {
-                IPAddress iPAddress = IPAddress.Parse(TextBox_IpAddress.Text);
-                int port = int.Parse(TextBox_Port.Text);
-                TcpListener tcpListener = new TcpListener(iPAddress, port);
-                tcpListener.Start();
 
-                RichTextBox_Logs.Text += $"Server Started with ip:{iPAddress} Port: {TextBox_Port.Text}";
+                IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName());
+                IPAddress ipAddr = ipHost.AddressList[0];
+                IPEndPoint localEndPoint = new IPEndPoint(ipAddr, 11111);
 
-                Thread thread = new Thread(() => Listener(tcpListener));
+                Socket listener = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+
+                listener.Bind(localEndPoint);
+                listener.Listen(10);
+
+                RichTextBox_Logs.Text += $"Server Started with ip:{ipAddr.Address.ToString()} Port: 11111";
+
+                Thread thread = new Thread(() => Listener(listener));
                 thread.Start();
             }
             catch (Exception ex)
@@ -45,19 +50,21 @@ namespace ServerUi
 
         }
 
-        private void Listener(TcpListener tcpListener)
+        private void Listener(Socket listener)
         {
             while (true)
             {
-                TcpClient client = tcpListener.AcceptTcpClient();
-                Invoke(new Action(() => { RichTextBox_Logs.Text += $"\nClient with Ip Address {client.Client.RemoteEndPoint} Connected!"; }));
-                client.ReceiveBufferSize = 4096;
-                client.SendBufferSize = 4096;
-                NetworkStream stream = client.GetStream();
+                Socket Socket = listener.Accept();
 
-                byte[] data = new byte[4096];
-                int bytes = stream.Read(data, 0, data.Length);
-                string message = Encoding.ASCII.GetString(data, 0, bytes);
+                
+
+
+                byte[] bytes = new Byte[1024];
+                int numByte = Socket.Receive(bytes);
+
+                string message = Encoding.ASCII.GetString(bytes, 0, numByte);
+
+
 
                 string[] lines = message.Split('\n');
                 string UserName = lines[0];
@@ -66,21 +73,30 @@ namespace ServerUi
                 string context = " ";
                 if (File.Exists($"{UserName}.txt"))
                 {
-                   context = File.ReadAllText($"{UserName}.txt");
+                    context = File.ReadAllText($"{UserName}.txt");
                 }
                 else
                 {
-                   File.Create($"{UserName}.txt").Close();
+                    File.Create($"{UserName}.txt").Close();
                 }
                 context += message;
-                using (var streamWriter = new StreamWriter($"{UserName}.txt",false))
+                using (var streamWriter = new StreamWriter($"{UserName}.txt", false))
                 {
-                    streamWriter.Write(context);
+                    streamWriter.WriteLine(context);
                 }
 
-                data = Encoding.ASCII.GetBytes(context);
-                stream.Write(data, 0, data.Length);
+                byte[] data = Encoding.ASCII.GetBytes(context);
+                Socket.Send(data);
+
+                Socket.Shutdown(SocketShutdown.Both);
+                Socket.Close();
             }
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

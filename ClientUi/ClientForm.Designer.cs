@@ -31,10 +31,6 @@
             this.Button_Process = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.RichTextBox_AllContext = new System.Windows.Forms.RichTextBox();
-            this.TextBox_IpAddress = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.TextBox_Port = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
             this.TextBox_UserName = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.TextBox_NewText = new System.Windows.Forms.TextBox();
@@ -72,39 +68,6 @@
             this.RichTextBox_AllContext.TabIndex = 1;
             this.RichTextBox_AllContext.Text = "";
             // 
-            // TextBox_IpAddress
-            // 
-            this.TextBox_IpAddress.Location = new System.Drawing.Point(300, 15);
-            this.TextBox_IpAddress.Name = "TextBox_IpAddress";
-            this.TextBox_IpAddress.Size = new System.Drawing.Size(147, 31);
-            this.TextBox_IpAddress.TabIndex = 3;
-            this.TextBox_IpAddress.Text = "127.0.0.1";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(453, 18);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(110, 24);
-            this.label2.TabIndex = 4;
-            this.label2.Text = "آدرس آی پی مقصد:";
-            // 
-            // TextBox_Port
-            // 
-            this.TextBox_Port.Location = new System.Drawing.Point(107, 15);
-            this.TextBox_Port.Name = "TextBox_Port";
-            this.TextBox_Port.Size = new System.Drawing.Size(100, 31);
-            this.TextBox_Port.TabIndex = 3;
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(213, 18);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(71, 24);
-            this.label3.TabIndex = 4;
-            this.label3.Text = "پورت مقصد:";
-            // 
             // TextBox_UserName
             // 
             this.TextBox_UserName.Location = new System.Drawing.Point(567, 15);
@@ -135,12 +98,8 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(796, 602);
             this.Controls.Add(this.TextBox_NewText);
-            this.Controls.Add(this.label3);
             this.Controls.Add(this.label4);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.TextBox_Port);
             this.Controls.Add(this.TextBox_UserName);
-            this.Controls.Add(this.TextBox_IpAddress);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.RichTextBox_AllContext);
             this.Controls.Add(this.Button_Process);
@@ -159,10 +118,6 @@
         private System.Windows.Forms.Button Button_Process;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.RichTextBox RichTextBox_AllContext;
-        private System.Windows.Forms.TextBox TextBox_IpAddress;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox TextBox_Port;
-        private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox TextBox_UserName;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox TextBox_NewText;

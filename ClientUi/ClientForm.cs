@@ -26,31 +26,27 @@ namespace ClientUi
         {
             try
             {
-                //client
-                TcpClient tcpClient = new TcpClient(TextBox_IpAddress.Text, int.Parse(TextBox_Port.Text));
-                tcpClient.ReceiveBufferSize = 4096;
-                tcpClient.SendBufferSize = 4096;
-                //stream
-                NetworkStream stream = tcpClient.GetStream();
+                IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName());
+                IPAddress ipAddr = ipHost.AddressList[0];
+                IPEndPoint localEndPoint = new IPEndPoint(ipAddr, 11111);
+
+                Socket client = new Socket(ipAddr.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                client.Connect(localEndPoint);
 
                 //send message to server
-                
                 var message = $"{TextBox_UserName.Text}\n";
                 message += TextBox_NewText.Text;
-                byte[] data = new byte[4096];
-                data = Encoding.ASCII.GetBytes(message);
-                stream.Write(data, 0, data.Length);
+                byte[] messageSent = Encoding.ASCII.GetBytes(message);
+                int byteSent = client.Send(messageSent);
+
+                byte[] messageReceived = new byte[1024];
+                int byteRecv = client.Receive(messageReceived);
+
+                RichTextBox_AllContext.Text = Encoding.ASCII.GetString(messageReceived,0, byteRecv);
+
+                client.Shutdown(SocketShutdown.Both);
+                client.Close();
                 
-                Thread.Sleep(3000);
-
-                //read result
-                var bytes = stream.Read(data, 0, data.Length);
-                var response = Encoding.ASCII.GetString(data, 0, bytes);
-
-                RichTextBox_AllContext.Text = response;
-
-                stream.Close();
-                tcpClient.Close();
             }
             catch (Exception ex)
             {
