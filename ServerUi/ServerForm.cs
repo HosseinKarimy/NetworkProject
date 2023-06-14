@@ -37,7 +37,7 @@ namespace ServerUi
                 listener.Bind(localEndPoint);
                 listener.Listen(10);
 
-                RichTextBox_Logs.Text += $"Server Started with ip:{ipAddr.Address.ToString()} Port: 11111";
+                RichTextBox_Logs.Text += $"Server Started...";
 
                 Thread thread = new Thread(() => Listener(listener));
                 thread.Start();
@@ -56,7 +56,7 @@ namespace ServerUi
             {
                 Socket Socket = listener.Accept();
 
-                
+                Invoke(Action () => { RichTextBox_Logs.Text += $"Server Started..."}) ;
 
 
                 byte[] bytes = new Byte[1024];
