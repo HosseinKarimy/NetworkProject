@@ -19,10 +19,11 @@ namespace ClientUi
         {
             try
             {
-                IPAddress ipAdders = IPAddress.Parse("192.168.1.100");
-                IPEndPoint localEndPoint = new IPEndPoint(ipAdders, 11111);
-
                 Client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+                IPAddress ipAdders = IPAddress.Parse("192.168.1.100");
+                IPEndPoint localEndPoint = new IPEndPoint(ipAdders, 54321);
+
                 Client.Connect(localEndPoint);
 
                 var message = MergeMessage();

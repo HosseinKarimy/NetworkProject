@@ -17,18 +17,20 @@ namespace ServerUi
 
 
         public Socket ServerListener { get; set; }
-        public Socket ClientSocket { get; set; }
         public Thread ListenerThread { get; set; }
 
         private void Button_Start_Click(object sender, EventArgs e)
         {
             try
             {
-                IPAddress ipAdders = IPAddress.Parse("192.168.1.100");
-                IPEndPoint localEndPoint = new IPEndPoint(ipAdders, 11111);
                 ServerListener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+                IPAddress ipAdders = IPAddress.Parse("192.168.1.100");
+                IPEndPoint localEndPoint = new IPEndPoint(ipAdders, 54321);
+
                 ServerListener.Bind(localEndPoint);
                 ServerListener.Listen(2);
+                //ClientSocket = ServerListener.Accept();
 
                 RichTextBox_Logs.Text += $"Server Started...{localEndPoint}\n";
 
@@ -49,14 +51,13 @@ namespace ServerUi
             {
                 try
                 {
-                    ClientSocket = ServerListener.Accept();
+                    var ClientSocket = ServerListener.Accept();
 
                     Invoke(new Action(() => { RichTextBox_Logs.Text += $"Client with EndPoint: {ClientSocket.RemoteEndPoint} connected! ({DateTime.Now})\n"; }));
 
 
                     byte[] bytes = new Byte[1024];
                     int numByte = ClientSocket.Receive(bytes);
-
                     string ReceivedMessage = Encoding.ASCII.GetString(bytes, 0, numByte);
 
                     (string UserName, string NewText) = SplitMessage(ReceivedMessage);
@@ -66,17 +67,13 @@ namespace ServerUi
 
                     byte[] data = Encoding.ASCII.GetBytes(context);
                     ClientSocket.Send(data);
+                    ClientSocket.Close();
                 }
                 catch (Exception)
                 {
                     
                 }
-                finally
-                {
-                    ClientSocket?.Close();
-                }
             }
-
         }
 
         private (string UserName, string NewText) SplitMessage(string received)
@@ -90,7 +87,6 @@ namespace ServerUi
             try
             {
                 ServerListener.Close();
-                ClientSocket.Close();
                 ListenerThread.Abort();
                 RichTextBox_Logs.Text += $"Server Shutdown...\n";
             }
